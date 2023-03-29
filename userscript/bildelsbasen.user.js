@@ -6,7 +6,7 @@
 // @match       https://www.bildelsbasen.se/*
 // @exclude     https://www.bildelsbasen.se/sv-se/*
 // @grant       none
-// @version     1.01
+// @version     1.02
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -14,6 +14,8 @@
 (function()
 {
     "use strict";
+
+    // Logotyp för att indikera att skriptet är igång
 
     const menubar = document.querySelector("body div.menubar");
     const logoDiv = document.createElement("div");
@@ -37,6 +39,8 @@
         });
     menubar.insertBefore(logoDiv, menubar.children[1]);
 
+    // Tar priserna på sidan och drar av momsen med en text under
+
     if (document.querySelector("body [class=box_none]"))
     {
         let elements = document.querySelectorAll("body [class='fntBld color3Drk']");
@@ -49,6 +53,20 @@
             newLi.textContent = `(¾) ${result} SEK`;
             newLi.classList.add("fntBld", "fntSml", "color3Drk");
             element.parentNode.insertBefore(newLi, element.nextSibling);
+        });
+    }
+
+    // Markerar delar som är från Atracco Hedemora
+
+    if (document.querySelector("body [class=box_none]"))
+    {
+        let elements = document.querySelectorAll("li");
+        elements.forEach(function(element)
+        {
+            if (element.textContent.includes("Atracco AB - Hedemora"))
+            {
+                element.style.backgroundColor = "#bbcf00";
+            }
         });
     }
 })();
