@@ -6,7 +6,7 @@
 // @match       https://www.bildelsbasen.se/*
 // @exclude     https://www.bildelsbasen.se/sv-se/*
 // @grant       none
-// @version     1.00
+// @version     1.01
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -15,7 +15,7 @@
 {
     "use strict";
 
-    const menubar = document.querySelector("#fbt div.menubar");
+    const menubar = document.querySelector("body div.menubar");
     const logoDiv = document.createElement("div");
     logoDiv.textContent = "BDB Helper";
     Object.assign(logoDiv.style,
@@ -37,9 +37,9 @@
         });
     menubar.insertBefore(logoDiv, menubar.children[1]);
 
-    if (document.querySelector("#fbt [class=box_none]"))
+    if (document.querySelector("body [class=box_none]"))
     {
-        let elements = document.querySelectorAll("#fbt [class='fntBld color3Drk']");
+        let elements = document.querySelectorAll("body [class='fntBld color3Drk']");
         elements.forEach(function(element)
         {
             let newLi = document.createElement("li");
