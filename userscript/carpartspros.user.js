@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.carparts-pros.com/*
 // @grant       none
-// @version     1.00
+// @version     1.01
 // @author      aleves
 // @description carparts-pros - Helper
 // ==/UserScript==
@@ -40,7 +40,7 @@
         });
     menubar.insertBefore(logoDiv, menubar.firstElementChild);
 
-    // Byter ut EUR till SEK vid konvertering från GBP
+    // Konverterar från EUR till SEK
 
     if (document.querySelector("#dnutzb [class=tab_typen]"))
     {
@@ -93,7 +93,7 @@
                                 const newElement = document.createElement("span");
                                 newElement.style.whiteSpace = "pre-wrap"; // Add the white-space property to the element
                                 newElement.textContent = newContent;
-                                newElement.setAttribute("title", `Svenska priser är beräknade via VATComply.\nDagens kurs från EUR till SEK är: ${sekRate}\nTysk moms (19%) avdragen`);
+                                newElement.setAttribute("title", `Svenska priser är beräknade via VATComply.\n(${rates.date}) Kurs från EUR till SEK är: ${sekRate}\nTysk moms (19%) avdragen.`);
                                 node.parentNode.replaceChild(newElement, node);
                             }
                         }
