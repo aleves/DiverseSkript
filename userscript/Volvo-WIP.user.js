@@ -2,10 +2,10 @@
 /* eslint-disable no-control-regex */
 /* eslint-disable no-undef */
 // ==UserScript==
-// @name         PL24 Helper - Volvo
+// @name         PL24 Helper - Volvo WIP
 // @namespace    Violentmonkey Scripts
-// @version      1.01
-// @description  PL24 Helper - Volvo
+// @version      0.01
+// @description  PL24 Helper - Volvo WIP
 // @author       aleves
 // @match        https://www.partslink24.com/volvo/volvo_parts/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=partslink24.com
