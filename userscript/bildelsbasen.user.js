@@ -6,7 +6,7 @@
 // @match       https://www.bildelsbasen.se/*
 // @exclude     https://www.bildelsbasen.se/sv-se/*
 // @grant       none
-// @version     1.02
+// @version     1.03
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -38,6 +38,66 @@
             zIndex: "666"
         });
     menubar.insertBefore(logoDiv, menubar.children[1]);
+
+    // Placerar en sidväljare bredbvid huvudrutan
+
+    function getCurrentPageFromURL()
+    {
+        const urlParams = new URLSearchParams(window.location.search);
+        return parseInt(urlParams.get("page")) || 1;
+    }
+
+    function updateURLWithPage(pageNumber)
+    {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set("page", pageNumber);
+        const newURL = window.location.pathname + "?" + urlParams.toString();
+        window.location.href = newURL;
+    }
+
+    if (document.querySelector("body [class='box_none']"))
+    {
+        const currentURL = window.location.href;
+        console.log("Current URL:", currentURL);
+
+        let currentPage = getCurrentPageFromURL();
+        console.log("Current Page:", currentPage);
+
+        const pageCountElement = document.querySelector("body [class='fntSml color1Med']");
+        const totalPages = parseInt(pageCountElement.textContent);
+
+        const pageSelectorDiv = document.querySelector("body [class='parttypeTabHolder']");
+
+        const backgroundBox = document.createElement("div");
+        backgroundBox.style.backgroundColor = "#f4f4f4";
+        backgroundBox.style.padding = "5px";
+        backgroundBox.style.borderRadius = "5px";
+        backgroundBox.style.position = "fixed";
+        backgroundBox.style.left = "4%";
+
+        const pageSelector = document.createElement("select");
+
+        for (let i = 1; i <= totalPages; i++)
+        {
+            const option = document.createElement("option");
+            option.text = `Sida ${i}`;
+            option.value = i;
+            pageSelector.appendChild(option);
+        }
+
+        pageSelector.value = currentPage;
+
+        pageSelector.addEventListener("change", (event) =>
+        {
+            const selectedPage = parseInt(event.target.value);
+            updateURLWithPage(selectedPage);
+            currentPage = selectedPage;
+            console.log("Updated URL with Page:", window.location.href);
+        });
+
+        backgroundBox.appendChild(pageSelector);
+        pageSelectorDiv.appendChild(backgroundBox);
+    }
 
     // Tar priserna på sidan och drar av momsen med en text under
 
