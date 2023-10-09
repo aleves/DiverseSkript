@@ -3,11 +3,11 @@
 // ==UserScript==
 // @name         RecoPart Helper - DemoWeb
 // @namespace    Violentmonkey Scripts
-// @version      1.00
+// @version      1.01
 // @description  RecoPart Helper - DemoWeb
 // @author       aleves
 // @match        https://dismantlers.recopart.se/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=partslink24.com
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=dismantlers.recopart.se
 // @grant        none
 // ==/UserScript==
 (function()
