@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         PartSouq Helper
 // @namespace    Violentmonkey Scripts
-// @version      1.01
+// @version      1.02
 // @description  PartSouq Helper
 // @author       aleves
 // @match        https://partsouq.com/*
@@ -49,6 +49,17 @@
                 newElement.textContent = "/ " + (parseFloat(element.textContent) / 2).toFixed(2).replace(".", ",");
                 element.after(newElement);
             });
+
+            if (document.querySelector("[class*=caption]"))
+            {
+                const elements = document.querySelectorAll("[class*=price-new]");
+                elements.forEach(element =>
+                {
+                    const newElement = document.createElement("div");
+                    newElement.textContent = "/ " + (parseFloat(element.textContent) / 2).toFixed(2).replace(".", ",");
+                    element.after(newElement);
+                });
+            }
         }
 
         if (document.querySelector("#gf-result-table [class*=sr-price]"))
@@ -73,17 +84,6 @@
             }
         });
         observer.observe(document.body, { childList: true, subtree: true });
-
-        if (document.querySelector("#content [class*=caption]"))
-        {
-            const elements = document.querySelectorAll("#content [class*=price-new]");
-            elements.forEach(element =>
-            {
-                const newElement = document.createElement("div");
-                newElement.textContent = "/ " + (parseFloat(element.textContent) / 2).toFixed(2).replace(".", ",");
-                element.after(newElement);
-            });
-        }
     }
 
     // Gör om PC-nummer i rutorna som öppnas till knappar som kopierar numret åt användaren
@@ -156,6 +156,94 @@
                 td.innerText = "";
                 td.appendChild(btn);
             });
+
+            if (document.querySelector("[class*=caption]"))
+            {
+                const elements = [...document.querySelectorAll("[class*=search-result-container]")];
+                console.warn(elements)
+                elements.forEach(element =>
+                {
+                    const h2Elements = element.querySelectorAll("h2");
+                    h2Elements.forEach(h2Element =>
+                    {
+                        const textContent = h2Element.textContent;
+                        const regex = /Part number: (.+)/;
+                        const match = textContent.match(regex);
+
+                        if (match)
+                        {
+                            const partNumber = match[1];
+
+                            if (partNumber.trim() === "")
+                            {
+                                return;
+                            }
+
+                            const wrapper = document.createElement("div");
+                            wrapper.style.display = "flex";
+                            wrapper.style.alignItems = "center";
+                            const textElement = document.createElement("span");
+                            textElement.innerText = "Part number: ";
+                            textElement.style.marginRight = "4px";
+                            wrapper.appendChild(textElement);
+
+                            const btn = document.createElement("button");
+                            btn.innerText = partNumber;
+                            btn.title = "Kopiera nummer";
+                            btn.addEventListener("click", event =>
+                            {
+                                navigator.clipboard.writeText(partNumber.trim());
+                                const notification = document.createElement("div");
+                                notification.innerText = "Kopierad!";
+                                Object.assign(notification.style, {
+                                    position: "absolute",
+                                    top: `${event.pageY - 40}px`,
+                                    left: `${event.pageX - 10}px`,
+                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                    border: "1px solid #cccccc",
+                                    borderRadius: "5px",
+                                    padding: "10px",
+                                    fontWeight: "bold",
+                                    color: "#333333",
+                                    boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
+                                    zIndex: "9999",
+                                    transition: "opacity 0.4s ease-out"
+                                });
+                                document.body.appendChild(notification);
+                                setTimeout(() =>
+                                {
+                                    notification.style.opacity = 0;
+                                    setTimeout(() =>
+                                    {
+                                        document.body.removeChild(notification);
+                                    }, 200);
+                                }, 500);
+                                event.preventDefault();
+                                event.stopPropagation();
+                            });
+                            Object.assign(btn.style, {
+                                padding: "4px 10px 2px 10px",
+                                border: "1px solid white",
+                                borderRadius: "4px",
+                                backgroundColor: "#e0e7ff",
+                                color: "black",
+                                fontWeight: "bold",
+                                textTransform: "uppercase",
+                                verticalAlign: "top",
+                                cursor: "pointer",
+                                borderBottom: "1px solid #e0e0e0",
+                                display: "block",
+                                boxSizing: "border-box",
+                                textAlign: "center",
+                                margin: 0
+                            });
+                            wrapper.appendChild(btn);
+                            h2Element.innerText = "";
+                            h2Element.appendChild(wrapper);
+                        }
+                    });
+                });
+            }
         }
 
         if (document.querySelector("#gf-result-table [class*=sr-number]"))
@@ -182,94 +270,6 @@
             }
         });
         observer.observe(document.body, { childList: true, subtree: true });
-
-        if (document.querySelector("#content [class*=caption]"))
-        {
-            const elements = document.querySelectorAll("#content [class*=search-result-container]");
-
-            elements.forEach(element =>
-            {
-                const h2Elements = element.querySelectorAll("h2");
-                h2Elements.forEach(h2Element =>
-                {
-                    const textContent = h2Element.textContent;
-                    const regex = /Part number: (.+)/;
-                    const match = textContent.match(regex);
-
-                    if (match)
-                    {
-                        const partNumber = match[1];
-
-                        if (partNumber.trim() === "")
-                        {
-                            return;
-                        }
-
-                        const wrapper = document.createElement("div");
-                        wrapper.style.display = "flex";
-                        wrapper.style.alignItems = "center";
-                        const textElement = document.createElement("span");
-                        textElement.innerText = "Part number: ";
-                        textElement.style.marginRight = "4px";
-                        wrapper.appendChild(textElement);
-
-                        const btn = document.createElement("button");
-                        btn.innerText = partNumber;
-                        btn.title = "Kopiera nummer";
-                        btn.addEventListener("click", event =>
-                        {
-                            navigator.clipboard.writeText(partNumber.trim());
-                            const notification = document.createElement("div");
-                            notification.innerText = "Kopierad!";
-                            Object.assign(notification.style, {
-                                position: "absolute",
-                                top: `${event.pageY - 40}px`,
-                                left: `${event.pageX - 10}px`,
-                                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                border: "1px solid #cccccc",
-                                borderRadius: "5px",
-                                padding: "10px",
-                                fontWeight: "bold",
-                                color: "#333333",
-                                boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
-                                zIndex: "9999",
-                                transition: "opacity 0.4s ease-out"
-                            });
-                            document.body.appendChild(notification);
-                            setTimeout(() =>
-                            {
-                                notification.style.opacity = 0;
-                                setTimeout(() =>
-                                {
-                                    document.body.removeChild(notification);
-                                }, 200);
-                            }, 500);
-                            event.preventDefault();
-                            event.stopPropagation();
-                        });
-                        Object.assign(btn.style, {
-                            padding: "4px 10px 2px 10px",
-                            border: "1px solid white",
-                            borderRadius: "4px",
-                            backgroundColor: "#e0e7ff",
-                            color: "black",
-                            fontWeight: "bold",
-                            textTransform: "uppercase",
-                            verticalAlign: "top",
-                            cursor: "pointer",
-                            borderBottom: "1px solid #e0e0e0",
-                            display: "block",
-                            boxSizing: "border-box",
-                            textAlign: "center",
-                            margin: 0
-                        });
-                        wrapper.appendChild(btn);
-                        h2Element.innerText = "";
-                        h2Element.appendChild(wrapper);
-                    }
-                });
-            });
-        }
     }
 
     //
