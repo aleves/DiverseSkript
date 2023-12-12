@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.00
+// @version     2.01
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -16,7 +16,7 @@
 
     // Logotyp för att indikera att skriptet är igång
 
-    const menubar = document.querySelector("app-header [class*=flex-lg-grow-1]");
+    const menubar = document.querySelector("app-header [class*=align-items-stretch]");
     const logoDiv = document.createElement("div");
     logoDiv.textContent = "BDB Helper";
     Object.assign(logoDiv.style,
@@ -29,7 +29,7 @@
             background: "linear-gradient(to top right, #32689B, #00AEEF)",
             padding: "5px 10px",
             borderRadius: "8px",
-            position: "relative",
+            position: "absolute",
             margin: "21px",
             whiteSpace: "nowrap",
             zIndex: "66667"
@@ -98,81 +98,81 @@
 
     // Tar priserna på sidan och drar av momsen med en text under
 
-    if (document.querySelector("app-shell"))
+    const priceSlasher = () =>
     {
-        const runCode = () =>
+        let elements = document.querySelectorAll("app-products-list [class*=py-2] [class*=fw-semibold]");
+        elements.forEach(function(element)
         {
-            let elements = document.querySelectorAll("app-products-list [class*=py-2] [class*=fw-semibold]");
-            elements.forEach(function(element)
-            {
-                let newLi = document.createElement("li");
-                let textContent = element.textContent;
-                let number = parseFloat(textContent.replace(/[^0-9,]/g, ""));
-                let result = number / 1.25;
-                newLi.textContent = `(¾) ${result} SEK`;
-                newLi.classList.add("fw-semibold");
-                element.parentNode.insertBefore(newLi, element.nextSibling);
-            });
-        }
-
-        const targetSelector = "ngx-loading-bar [class*=ngx-spinner-icon]";
-        let isElementPresent = false;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const handleElementChange = (mutationsList, observer) =>
-        {
-            for (const mutation of mutationsList)
-            {
-                if (mutation.type === "childList")
-                {
-                    const targetElement = document.querySelector(targetSelector);
-
-                    if (targetElement && !isElementPresent)
-                    {
-                        isElementPresent = true;
-                    }
-                    else if (!targetElement && isElementPresent)
-                    {
-                        isElementPresent = false;
-                        runCode()
-                    }
-                }
-            }
-        };
-        const observer = new MutationObserver(handleElementChange);
-        observer.observe(document.body, { subtree: true, childList: true });
+            let newLi = document.createElement("li");
+            let textContent = element.textContent;
+            let number = parseFloat(textContent.replace(/[^0-9,]/g, ""));
+            let result = number / 1.25;
+            newLi.textContent = `(¾) ${result} SEK`;
+            newLi.classList.add("fw-semibold");
+            element.parentNode.insertBefore(newLi, element.nextSibling);
+        });
     }
 
     // Markerar delar som är från Atracco Hedemora
 
+    const markHedemora = () =>
+    {
+        let elements = document.querySelectorAll("app-products-list [class*='ms-md-2 me-2 me-md-0']");
+        elements.forEach(function(element)
+        {
+            let divElements = element.querySelectorAll("div");
+            divElements.forEach(function(divElement)
+            {
+                if (divElement.textContent.includes("Atracco AB - Hedemora"))
+                {
+                    divElement.style.backgroundColor = "#bbcf00";
+                }
+            });
+        });
+    }
+
+    // Observerar element som behöver laddas in först innan kod körs
+
     if (document.querySelector("app-shell"))
     {
-        const runCode = () =>
+        var svgFound = false;
+        const onSvgFound = () =>
         {
-            let elements = document.querySelectorAll("app-products-list [class*='ms-md-2 me-2 me-md-0']");
-            elements.forEach(function(element)
+            if (!svgFound)
             {
-                let divElements = element.querySelectorAll("div");
-                divElements.forEach(function(divElement)
+                svgFound = true;
+                observer.disconnect();
+                setTimeout(function()
                 {
-                    if (divElement.textContent.includes("Atracco AB - Hedemora"))
-                    {
-                        divElement.style.backgroundColor = "#bbcf00";
-                    }
-                });
-            });
+                    priceSlasher();
+                    markHedemora();
+                }, 500);
+            }
         }
 
-        const targetSelector = "ngx-loading-bar [class*=ngx-spinner-icon]";
-        let isElementPresent = false;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const handleElementChange = (mutationsList, observer) =>
+        var observer = new MutationObserver(mutations =>
         {
-            for (const mutation of mutationsList)
+            mutations.forEach(mutation =>
+            {
+                mutation.addedNodes.forEach(node =>
+                {
+                    if (node instanceof SVGElement)
+                    {
+                        onSvgFound();
+                    }
+                })
+            })
+        });
+        observer.observe(document, { childList: true, subtree: true });
+
+        let isElementPresent = false;
+        new MutationObserver(mutationsList =>
+        {
+            mutationsList.forEach(mutation =>
             {
                 if (mutation.type === "childList")
                 {
-                    const targetElement = document.querySelector(targetSelector);
-
+                    const targetElement = document.querySelector("ngx-loading-bar [class*=ngx-spinner-icon]");
                     if (targetElement && !isElementPresent)
                     {
                         isElementPresent = true;
@@ -180,12 +180,11 @@
                     else if (!targetElement && isElementPresent)
                     {
                         isElementPresent = false;
-                        runCode()
+                        priceSlasher();
+                        markHedemora();
                     }
                 }
-            }
-        };
-        const observer = new MutationObserver(handleElementChange);
-        observer.observe(document.body, { subtree: true, childList: true });
+            });
+        }).observe(document.body, { subtree: true, childList: true });
     }
 })();
