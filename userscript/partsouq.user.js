@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         PartSouq Helper
 // @namespace    Violentmonkey Scripts
-// @version      1.02
+// @version      1.04
 // @description  PartSouq Helper
 // @author       aleves
 // @match        https://partsouq.com/*
@@ -90,10 +90,9 @@
 
     if (document.querySelector("#content"))
     {
-        const addBtns = () =>
+        const addBtns = (query) =>
         {
-            const partnoTds = document.querySelectorAll("#gf-result-table [class*=sr-number]");
-            partnoTds.forEach(td =>
+            query.forEach(td =>
             {
                 if (td.innerText.trim() === "")
                 {
@@ -160,7 +159,6 @@
             if (document.querySelector("[class*=caption]"))
             {
                 const elements = [...document.querySelectorAll("[class*=search-result-container]")];
-                console.warn(elements)
                 elements.forEach(element =>
                 {
                     const h2Elements = element.querySelectorAll("h2");
@@ -246,11 +244,6 @@
             }
         }
 
-        if (document.querySelector("#gf-result-table [class*=sr-number]"))
-        {
-            addBtns();
-        }
-
         const observer = new MutationObserver((mutationsList) =>
         {
             for (let mutation of mutationsList)
@@ -264,7 +257,122 @@
                     removedNode.getAttribute("src") === "/images/dashinfinity.gif"
                     )
                     {
-                        addBtns();
+                        if (document.querySelector("#gf-result-table [class*=sr-number]"))
+                        {
+                            const partnoTds = document.querySelectorAll("#gf-result-table [class*=sr-number]");
+                            addBtns(partnoTds);
+                        }
+                        if (document.querySelector("[id*=srDialog] h3"))
+                        {
+                            const partnoTds = document.querySelector("[id*=srDialog] h3");
+                            const regex = /Search result for: (.+)/;
+                            const match = partnoTds.textContent.match(regex);
+                            if (match)
+                            {
+                                const partNumber = match[1];
+
+                                if (partNumber.trim() === "")
+                                {
+                                    return;
+                                }
+
+                                const wrapper = document.createElement("div");
+                                wrapper.style.display = "flex";
+                                wrapper.style.alignItems = "center";
+                                const textElement = document.createElement("span");
+                                textElement.innerText = "Search result for: ";
+                                textElement.style.marginRight = "4px";
+                                wrapper.appendChild(textElement);
+
+                                const btn = document.createElement("button");
+                                btn.innerText = partNumber;
+                                btn.title = "Kopiera nummer";
+                                btn.addEventListener("click", event =>
+                                {
+                                    navigator.clipboard.writeText(partNumber.trim());
+                                    const notification = document.createElement("div");
+                                    notification.innerText = "Kopierad!";
+                                    Object.assign(notification.style, {
+                                        position: "absolute",
+                                        top: `${event.pageY - 40}px`,
+                                        left: `${event.pageX - 10}px`,
+                                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                        border: "1px solid #cccccc",
+                                        borderRadius: "5px",
+                                        padding: "10px",
+                                        fontWeight: "bold",
+                                        color: "#333333",
+                                        boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
+                                        zIndex: "9999",
+                                        transition: "opacity 0.4s ease-out"
+                                    });
+                                    document.body.appendChild(notification);
+                                    setTimeout(() =>
+                                    {
+                                        notification.style.opacity = 0;
+                                        setTimeout(() =>
+                                        {
+                                            document.body.removeChild(notification);
+                                        }, 200);
+                                    }, 500);
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                });
+                                Object.assign(btn.style, {
+                                    padding: "2px 5px 1px 5px",
+                                    border: "1px solid white",
+                                    borderRadius: "4px",
+                                    backgroundColor: "#e0e7ff",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase",
+                                    verticalAlign: "top",
+                                    cursor: "pointer",
+                                    borderBottom: "1px solid #e0e0e0",
+                                    display: "block",
+                                    boxSizing: "border-box",
+                                    textAlign: "center",
+                                    margin: 0
+                                });
+                                wrapper.appendChild(btn);
+                                partnoTds.innerText = "";
+                                partnoTds.appendChild(wrapper);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Ändrar färgen på 'Substitutions' så att risken att man missar det är lägre
+
+    if (document.querySelector("#content"))
+    {
+        const observer = new MutationObserver((mutationsList) =>
+        {
+            for (let mutation of mutationsList)
+            {
+                if (mutation.type === "childList" && mutation.removedNodes.length > 0)
+                {
+                    const removedNode = mutation.removedNodes[0];
+                    if (
+                        removedNode.nodeName === "IMG" &&
+                    removedNode.getAttribute("alt") === "wait" &&
+                    removedNode.getAttribute("src") === "/images/dashinfinity.gif"
+                    )
+                    {
+                        const table = document.querySelectorAll("[id*=gf-result-table] h4");
+                        for (const title of table)
+                        {
+                            if (title.textContent.trim() === "Substitutions")
+                            {
+                                const test = title.closest("tr");
+                                Object.assign(test.style, {
+                                    backgroundImage: "linear-gradient(to right, #ffe6dc, #fff9e3)"
+                                });
+                            }
+                        }
                     }
                 }
             }
