@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.01
+// @version     2.02
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -19,6 +19,7 @@
     const menubar = document.querySelector("app-header [class*=align-items-stretch]");
     const logoDiv = document.createElement("div");
     logoDiv.textContent = "BDB Helper";
+    logoDiv.title = `v${GM_info.script.version}`
     Object.assign(logoDiv.style,
         {
             fontFamily: "Arial, sans-serif",
@@ -32,7 +33,8 @@
             position: "absolute",
             margin: "21px",
             whiteSpace: "nowrap",
-            zIndex: "66667"
+            zIndex: "66667",
+            cursor: "default"
         });
     menubar.insertBefore(logoDiv, menubar.children[1]);
 
@@ -131,6 +133,115 @@
         });
     }
 
+    // Aktiverar möjligheten att kunna spara bilder med höger klick
+
+    if (document.querySelector("body"))
+    {
+        const mainScript = () =>
+        {
+            const imageItems = document.querySelectorAll(".g-image-item");
+            imageItems.forEach(item =>
+            {
+                item.style.pointerEvents = "auto";
+            });
+            observeForLoadingElements();
+        }
+
+        const observeForLoadingElements = () =>
+        {
+            const targetNode = document.body;
+            const observer = new MutationObserver(function(mutationsList, observer)
+            {
+                for (const mutation of mutationsList)
+                {
+                    if (mutation.type === "childList" && Array.from(mutation.addedNodes).some(node => node.matches && node.matches("[class*=g-loading]")) || Array.from(mutation.removedNodes).some(node => node.matches && node.matches("[class*=g-loading]")))
+                    {
+                        if (!document.querySelector("[class*=g-loading]"))
+                        {
+                            mainScript();
+                            observer.disconnect();
+                        }
+                    }
+                }
+            });
+            const config = { childList: true, subtree: true };
+            observer.observe(targetNode, config);
+        }
+        observeForLoadingElements();
+    }
+
+    // Gör om PC-nummer till knappar som kopierar numret åt användaren
+
+    const copyOriginal = () =>
+    {
+        const labels = document.querySelectorAll("app-products-list [transloco*='label_original_no']");
+        const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
+
+        const btnStyle = {
+            border: "1px solid white",
+            borderRadius: "4px",
+            backgroundColor: "#e0e7ff",
+            color: "black",
+            cursor: "pointer",
+            margin: "0 auto",
+            borderBottom: "1px solid #e0e0e0",
+            boxSizing: "border-box",
+            textAlign: "center"
+        };
+
+        labels.forEach((label, index) =>
+        {
+            const parentElement = label.parentElement;
+            const btn = document.createElement("btn");
+            btn.textContent = label.textContent;
+            Object.assign(btn.style, btnStyle);
+
+            btn.title = "Kopiera nummer";
+            btn.addEventListener("click", event =>
+            {
+                const labelText = btns[index].textContent;
+                navigator.clipboard.writeText(labelText)
+                    .then(() =>
+                    {
+                        const notification = document.createElement("div");
+                        notification.innerText = "Kopierad!";
+                        Object.assign(notification.style, {
+                            position: "absolute",
+                            top: `${event.pageY - 40}px`,
+                            left: `${event.pageX - 10}px`,
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            border: "1px solid #cccccc",
+                            borderRadius: "5px",
+                            padding: "10px",
+                            fontWeight: "bold",
+                            color: "#333333",
+                            boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
+                            zIndex: "9999",
+                            transition: "opacity 0.4s ease-out"
+                        });
+                        document.body.appendChild(notification);
+                        setTimeout(() =>
+                        {
+                            notification.style.opacity = 0;
+                            setTimeout(() =>
+                            {
+                                document.body.removeChild(notification);
+                            }, 200);
+                        }, 500);
+                    })
+                    .catch(err =>
+                    {
+                        console.error("Failed to copy label text: ", err);
+                    });
+
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
+            parentElement.replaceChild(btn, label);
+        });
+    }
+
     // Observerar element som behöver laddas in först innan kod körs
 
     if (document.querySelector("app-shell"))
@@ -146,6 +257,7 @@
                 {
                     priceSlasher();
                     markHedemora();
+                    copyOriginal();
                 }, 500);
             }
         }
@@ -182,6 +294,7 @@
                         isElementPresent = false;
                         priceSlasher();
                         markHedemora();
+                        copyOriginal();
                     }
                 }
             });
