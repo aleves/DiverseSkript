@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.02
+// @version     2.03
 // @author      aleves
 // @description Bildelsbasen - Helper
 // ==/UserScript==
@@ -174,7 +174,8 @@
 
     const copyOriginal = () =>
     {
-        const labels = document.querySelectorAll("app-products-list [transloco*='label_original_no']");
+        const container = document.querySelector("app-products-list");
+        const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"]");
         const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
 
         const btnStyle = {
@@ -189,18 +190,19 @@
             textAlign: "center"
         };
 
-        labels.forEach((label, index) =>
+        elements.forEach((element, index) =>
         {
-            const parentElement = label.parentElement;
+            //console.log(element)
+            const parentElement = element.parentElement;
             const btn = document.createElement("btn");
-            btn.textContent = label.textContent;
+            btn.textContent = element.textContent;
             Object.assign(btn.style, btnStyle);
 
             btn.title = "Kopiera nummer";
             btn.addEventListener("click", event =>
             {
-                const labelText = btns[index].textContent;
-                navigator.clipboard.writeText(labelText)
+                const elementText = btns[index].textContent;
+                navigator.clipboard.writeText(elementText)
                     .then(() =>
                     {
                         const notification = document.createElement("div");
@@ -231,14 +233,14 @@
                     })
                     .catch(err =>
                     {
-                        console.error("Failed to copy label text: ", err);
+                        console.error("Failed to copy element text: ", err);
                     });
 
                 event.preventDefault();
                 event.stopPropagation();
             });
 
-            parentElement.replaceChild(btn, label);
+            parentElement.replaceChild(btn, element);
         });
     }
 
