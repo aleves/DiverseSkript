@@ -8,3 +8,4 @@
 ---
     Version 2.04
         * Skapar denna ruta för att visa förändringar
+          Denna ruta hålls stängd till nästa version
