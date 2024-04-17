@@ -5,9 +5,10 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.03
+// @version     2.04
 // @author      aleves
 // @description Bildelsbasen - Helper
+// @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
 (function()
@@ -37,6 +38,54 @@
             cursor: "default"
         });
     menubar.insertBefore(logoDiv, menubar.children[1]);
+
+    // Visar ändringar efter varje ny version
+
+    if (document.querySelector("body"))
+    {
+        const showChangelogPopup = () =>
+        {
+            const savedVersion = localStorage.getItem("savedScriptVersion");
+            const currentVersion = GM_info.script.version;
+            if (savedVersion !== currentVersion)
+            {
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: "https://raw.githubusercontent.com/aleves/DiverseSkript/main/userscript/bildelsbasen.changelog.txt",
+                    onload: function(response)
+                    {
+                        if (response.status == 200)
+                        {
+                            const changelogText = response.responseText;
+
+                            const popup = document.createElement("div");
+                            popup.style.position = "fixed";
+                            popup.style.top = "25%";
+                            popup.style.left = "12.5%";
+                            popup.style.transform = "translate(-50%, -50%)";
+                            popup.style.background = "#fff";
+                            popup.style.padding = "16px";
+                            popup.style.border = "2px solid #000";
+                            popup.style.zIndex = "9999";
+                            popup.innerHTML = `
+                            <h2>Förändringslogg</h2>
+                            <pre>${changelogText}</pre>
+                            <button id="closeBtn">Stäng</button>
+                            `;
+
+                            popup.querySelector("#closeBtn").addEventListener("click", function()
+                            {
+                                localStorage.setItem("savedScriptVersion", currentVersion);
+                                popup.remove();
+                            });
+                            document.body.appendChild(popup);
+                        }
+                    }
+                });
+            }
+        }
+        showChangelogPopup();
+    }
 
     // Placerar en sidväljare bredbvid huvudrutan
 
@@ -174,74 +223,81 @@
 
     const copyOriginal = () =>
     {
-        const container = document.querySelector("app-products-list");
-        const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"]");
-        const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
-
-        const btnStyle = {
-            border: "1px solid white",
-            borderRadius: "4px",
-            backgroundColor: "#e0e7ff",
-            color: "black",
-            cursor: "pointer",
-            margin: "0 auto",
-            borderBottom: "1px solid #e0e0e0",
-            boxSizing: "border-box",
-            textAlign: "center"
-        };
-
-        elements.forEach((element, index) =>
+        try
         {
-            //console.log(element)
-            const parentElement = element.parentElement;
-            const btn = document.createElement("btn");
-            btn.textContent = element.textContent;
-            Object.assign(btn.style, btnStyle);
+            const container = document.querySelector("app-products-list");
+            const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"]");
+            const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
 
-            btn.title = "Kopiera nummer";
-            btn.addEventListener("click", event =>
+            const btnStyle = {
+                border: "1px solid white",
+                borderRadius: "4px",
+                backgroundColor: "#e0e7ff",
+                color: "black",
+                cursor: "pointer",
+                margin: "0 auto",
+                borderBottom: "1px solid #e0e0e0",
+                boxSizing: "border-box",
+                textAlign: "center"
+            };
+
+            elements.forEach((element, index) =>
             {
-                const elementText = btns[index].textContent;
-                navigator.clipboard.writeText(elementText)
-                    .then(() =>
-                    {
-                        const notification = document.createElement("div");
-                        notification.innerText = "Kopierad!";
-                        Object.assign(notification.style, {
-                            position: "absolute",
-                            top: `${event.pageY - 40}px`,
-                            left: `${event.pageX - 10}px`,
-                            backgroundColor: "rgba(255, 255, 255, 0.95)",
-                            border: "1px solid #cccccc",
-                            borderRadius: "5px",
-                            padding: "10px",
-                            fontWeight: "bold",
-                            color: "#333333",
-                            boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
-                            zIndex: "9999",
-                            transition: "opacity 0.4s ease-out"
-                        });
-                        document.body.appendChild(notification);
-                        setTimeout(() =>
+            //console.log(element)
+                const parentElement = element.parentElement;
+                const btn = document.createElement("btn");
+                btn.textContent = element.textContent;
+                Object.assign(btn.style, btnStyle);
+
+                btn.title = "Kopiera nummer";
+                btn.addEventListener("click", event =>
+                {
+                    const elementText = btns[index].textContent;
+                    navigator.clipboard.writeText(elementText)
+                        .then(() =>
                         {
-                            notification.style.opacity = 0;
+                            const notification = document.createElement("div");
+                            notification.innerText = "Kopierad!";
+                            Object.assign(notification.style, {
+                                position: "absolute",
+                                top: `${event.pageY - 40}px`,
+                                left: `${event.pageX - 10}px`,
+                                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                                border: "1px solid #cccccc",
+                                borderRadius: "5px",
+                                padding: "10px",
+                                fontWeight: "bold",
+                                color: "#333333",
+                                boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
+                                zIndex: "9999",
+                                transition: "opacity 0.4s ease-out"
+                            });
+                            document.body.appendChild(notification);
                             setTimeout(() =>
                             {
-                                document.body.removeChild(notification);
-                            }, 200);
-                        }, 500);
-                    })
-                    .catch(err =>
-                    {
-                        console.error("Failed to copy element text: ", err);
-                    });
+                                notification.style.opacity = 0;
+                                setTimeout(() =>
+                                {
+                                    document.body.removeChild(notification);
+                                }, 200);
+                            }, 500);
+                        })
+                        .catch(err =>
+                        {
+                            console.error("Failed to copy element text: ", err);
+                        });
 
-                event.preventDefault();
-                event.stopPropagation();
+                    event.preventDefault();
+                    event.stopPropagation();
+                });
+
+                parentElement.replaceChild(btn, element);
             });
-
-            parentElement.replaceChild(btn, element);
-        });
+        }
+        catch (error)
+        {
+            // inga objekt att göra om till knappar
+        }
     }
 
     // Observerar element som behöver laddas in först innan kod körs
