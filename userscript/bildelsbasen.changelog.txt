@@ -1,6 +1,10 @@
 ---
-    2024-02-17
-        added this
+    Version 2.02
+        * Högerklick för att spara bilder
+        * Skapar knappar för att kopiera diverse nummer
 ---
-    2024-02-15
-        added that
+    Vesrion 2.03
+        * Buggfixar
+---
+    Version 2.04
+        * Skapar denna ruta för att visa förändringar
