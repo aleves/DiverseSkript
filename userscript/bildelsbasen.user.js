@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.04
+// @version     2.05
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -151,16 +151,17 @@
 
     const priceSlasher = () =>
     {
-        let elements = document.querySelectorAll("app-products-list [class*=py-2] [class*=fw-semibold]");
-        elements.forEach(function(element)
+        let elements = document.querySelectorAll("[transloco*=label_incl_vat]");
+        elements.forEach(function(elementPre)
         {
+            const element = elementPre.previousSibling;
             let newLi = document.createElement("li");
             let textContent = element.textContent;
             let number = parseFloat(textContent.replace(/[^0-9,]/g, ""));
             let result = number / 1.25;
             newLi.textContent = `(¾) ${result} SEK`;
             newLi.classList.add("fw-semibold");
-            element.parentNode.insertBefore(newLi, element.nextSibling);
+            element.parentNode.insertBefore(newLi, element.nextSibling.nextSibling);
         });
     }
 
@@ -182,7 +183,7 @@
         });
     }
 
-    // Aktiverar möjligheten att kunna spara bilder med höger klick
+    // Aktiverar möjligheten att kunna spara bilder med högerklick
 
     if (document.querySelector("body"))
     {
@@ -243,7 +244,6 @@
 
             elements.forEach((element, index) =>
             {
-            //console.log(element)
                 const parentElement = element.parentElement;
                 const btn = document.createElement("btn");
                 btn.textContent = element.textContent;
