@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.05
+// @version     2.06
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -14,6 +14,47 @@
 (function()
 {
     "use strict";
+
+    const btnStyle = {
+        border: "1px solid white",
+        borderRadius: "4px",
+        backgroundColor: "#e0e7ff",
+        color: "black",
+        cursor: "pointer",
+        margin: "0 auto",
+        borderBottom: "1px solid #e0e0e0",
+        boxSizing: "border-box",
+        textAlign: "center"
+    };
+
+    function copyPop(event)
+    {
+        const notification = document.createElement("div");
+        notification.innerText = "Kopierad!";
+        Object.assign(notification.style, {
+            position: "absolute",
+            top: `${event.pageY - 40}px`,
+            left: `${event.pageX - 10}px`,
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #cccccc",
+            borderRadius: "5px",
+            padding: "10px",
+            fontWeight: "bold",
+            color: "#333333",
+            boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
+            zIndex: "9999",
+            transition: "opacity 0.4s ease-out"
+        });
+        document.body.appendChild(notification);
+        setTimeout(() =>
+        {
+            notification.style.opacity = 0;
+            setTimeout(() =>
+            {
+                document.body.removeChild(notification);
+            }, 200);
+        }, 500);
+    }
 
     // Logotyp för att indikera att skriptet är igång
 
@@ -230,18 +271,6 @@
             const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"]");
             const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
 
-            const btnStyle = {
-                border: "1px solid white",
-                borderRadius: "4px",
-                backgroundColor: "#e0e7ff",
-                color: "black",
-                cursor: "pointer",
-                margin: "0 auto",
-                borderBottom: "1px solid #e0e0e0",
-                boxSizing: "border-box",
-                textAlign: "center"
-            };
-
             elements.forEach((element, index) =>
             {
                 const parentElement = element.parentElement;
@@ -256,31 +285,7 @@
                     navigator.clipboard.writeText(elementText)
                         .then(() =>
                         {
-                            const notification = document.createElement("div");
-                            notification.innerText = "Kopierad!";
-                            Object.assign(notification.style, {
-                                position: "absolute",
-                                top: `${event.pageY - 40}px`,
-                                left: `${event.pageX - 10}px`,
-                                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                border: "1px solid #cccccc",
-                                borderRadius: "5px",
-                                padding: "10px",
-                                fontWeight: "bold",
-                                color: "#333333",
-                                boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.3)",
-                                zIndex: "9999",
-                                transition: "opacity 0.4s ease-out"
-                            });
-                            document.body.appendChild(notification);
-                            setTimeout(() =>
-                            {
-                                notification.style.opacity = 0;
-                                setTimeout(() =>
-                                {
-                                    document.body.removeChild(notification);
-                                }, 200);
-                            }, 500);
+                            copyPop(event);
                         })
                         .catch(err =>
                         {
@@ -300,6 +305,67 @@
         }
     }
 
+    // hjälpmedel på "Produktinformation"-sidan
+
+    const productInfo = () =>
+    {
+        if (document.querySelector("[role*=tabpanel]"))
+        {
+            const stockNo = document.querySelector("[class*='text-danger fw-bold ms-1']");
+            const stockText = stockNo.previousSibling.previousSibling.previousSibling;
+            const btn = document.createElement("btn");
+            btn.textContent = stockText.textContent;
+            Object.assign(btn.style, btnStyle);
+
+            btn.title = "Kopiera nummer";
+            btn.addEventListener("click", event =>
+            {
+                const elementText = stockNo.textContent;
+                navigator.clipboard.writeText(elementText)
+                    .then(() =>
+                    {
+                        copyPop(event);
+                    })
+                    .catch(err =>
+                    {
+                        console.error("Failed to copy element text: ", err);
+                    });
+
+                event.preventDefault();
+                event.stopPropagation();
+            });
+            stockText.innerText = "";
+            stockText.appendChild(btn);
+        }
+
+        if (document.querySelector("[role*=tabpanel]"))
+        {
+            const companyNameDiv = document.querySelector("[class*='text-primary fw-semibold fs-6']");
+            const companyName = companyNameDiv.getAttribute("title").trim();
+            const btn = document.createElement("btn");
+            btn.textContent = "Kopiera företagsnamn";
+            Object.assign(btn.style, btnStyle);
+
+            btn.title = "Kopiera nummer";
+            btn.addEventListener("click", event =>
+            {
+                navigator.clipboard.writeText(companyName)
+                    .then(() =>
+                    {
+                        copyPop(event);
+                    })
+                    .catch(err =>
+                    {
+                        console.error("Failed to copy element text: ", err);
+                    });
+
+                event.preventDefault();
+                event.stopPropagation();
+            });
+            companyNameDiv.parentElement.insertBefore(btn, companyNameDiv.nextSibling);
+        }
+    }
+
     // Observerar element som behöver laddas in först innan kod körs
 
     if (document.querySelector("app-shell"))
@@ -316,6 +382,7 @@
                     priceSlasher();
                     markHedemora();
                     copyOriginal();
+                    productInfo();
                 }, 500);
             }
         }
@@ -353,6 +420,7 @@
                         priceSlasher();
                         markHedemora();
                         copyOriginal();
+                        productInfo();
                     }
                 }
             });
