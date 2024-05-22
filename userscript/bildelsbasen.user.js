@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.06
+// @version     2.07
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -198,9 +198,10 @@
             const element = elementPre.previousSibling;
             let newLi = document.createElement("li");
             let textContent = element.textContent;
-            let number = parseFloat(textContent.replace(/[^0-9,]/g, ""));
+            console.log(textContent)
+            let number = parseFloat(textContent.replace(/[a-zA-Z,]/g, ""));
             let result = number / 1.25;
-            newLi.textContent = `(¾) ${result} SEK`;
+            newLi.textContent = `(¾) ${result.toFixed(2)} SEK`;
             newLi.classList.add("fw-semibold");
             element.parentNode.insertBefore(newLi, element.nextSibling.nextSibling);
         });

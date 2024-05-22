@@ -15,3 +15,6 @@
 ---
     Version 2.06
         * Buggfixar
+---
+    Version 2.07
+        * Buggfixar
