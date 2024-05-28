@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.07
+// @version     2.08
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -192,13 +192,12 @@
 
     const priceSlasher = () =>
     {
-        let elements = document.querySelectorAll("[transloco*=label_incl_vat]");
+        let elements = document.querySelectorAll("[class*='fs-7 ms-2 ng-star-inserted'], [class*='ms-1 fs-8 ng-star-inserted']");
         elements.forEach(function(elementPre)
         {
             const element = elementPre.previousSibling;
             let newLi = document.createElement("li");
             let textContent = element.textContent;
-            console.log(textContent)
             let number = parseFloat(textContent.replace(/[a-zA-Z,]/g, ""));
             let result = number / 1.25;
             newLi.textContent = `(¾) ${result.toFixed(2)} SEK`;
