@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.08
+// @version     2.09
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -58,27 +58,30 @@
 
     // Logotyp för att indikera att skriptet är igång
 
-    const menubar = document.querySelector("app-header [class*=align-items-stretch]");
-    const logoDiv = document.createElement("div");
-    logoDiv.textContent = "BDB Helper";
-    logoDiv.title = `v${GM_info.script.version}`
-    Object.assign(logoDiv.style,
-        {
-            fontFamily: "Arial, sans-serif",
-            fontSize: "14px",
-            fontWeight: "bold",
-            color: "#ffffff",
-            ["text-shadow"]: "-1px 1px .25px rgba(0, 0, 0, 0.67), -1px 0 .25px rgba(0, 0, 0, 0.67)",
-            background: "linear-gradient(to top right, #32689B, #00AEEF)",
-            padding: "5px 10px",
-            borderRadius: "8px",
-            position: "absolute",
-            margin: "21px",
-            whiteSpace: "nowrap",
-            zIndex: "66667",
-            cursor: "default"
-        });
-    menubar.insertBefore(logoDiv, menubar.children[1]);
+    const showLogo = () =>
+    {
+        const menubar = document.querySelector("app-header [class*=align-items-stretch]");
+        const logoDiv = document.createElement("div");
+        logoDiv.textContent = "BDB Helper";
+        logoDiv.title = `v${GM_info.script.version}`
+        Object.assign(logoDiv.style,
+            {
+                fontFamily: "Arial, sans-serif",
+                fontSize: "14px",
+                fontWeight: "bold",
+                color: "#ffffff",
+                ["text-shadow"]: "-1px 1px .25px rgba(0, 0, 0, 0.67), -1px 0 .25px rgba(0, 0, 0, 0.67)",
+                background: "linear-gradient(to top right, #32689B, #00AEEF)",
+                padding: "5px 10px",
+                borderRadius: "8px",
+                position: "absolute",
+                margin: "21px",
+                whiteSpace: "nowrap",
+                zIndex: "66667",
+                cursor: "default"
+            });
+        menubar.insertBefore(logoDiv, menubar.children[1]);
+    }
 
     // Visar ändringar efter varje ny version
 
@@ -102,16 +105,20 @@
                             const popup = document.createElement("div");
                             popup.style.position = "fixed";
                             popup.style.top = "25%";
-                            popup.style.left = "12.5%";
+                            popup.style.left = "15%";
                             popup.style.transform = "translate(-50%, -50%)";
                             popup.style.background = "#fff";
                             popup.style.padding = "16px";
                             popup.style.border = "2px solid #000";
                             popup.style.zIndex = "9999";
-                            popup.innerHTML = `
-                            <h2>Förändringslogg</h2>
-                            <pre>${changelogText}</pre>
-                            <button id="closeBtn">Stäng</button>
+                            popup.style.maxHeight = "50%";
+                            popup.style.overflowY = "auto";
+
+                            popup.innerHTML =
+                            `
+                                <h2>Förändringslogg</h2>
+                                <pre style="max-height: 200px; overflow-y: auto;">${changelogText}</pre>
+                                <button id="closeBtn">Stäng</button>
                             `;
 
                             popup.querySelector("#closeBtn").addEventListener("click", function()
@@ -119,7 +126,9 @@
                                 localStorage.setItem("savedScriptVersion", currentVersion);
                                 popup.remove();
                             });
+
                             document.body.appendChild(popup);
+
                         }
                     }
                 });
@@ -130,63 +139,85 @@
 
     // Placerar en sidväljare bredbvid huvudrutan
 
-    /*     function getCurrentPageFromURL()
+    const sideWidget = () =>
     {
-        const urlParams = new URLSearchParams(window.location.search);
-        return parseInt(urlParams.get("page")) || 1;
-    }
-
-    function updateURLWithPage(pageNumber)
-    {
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set("page", pageNumber);
-        const newURL = window.location.pathname + "?" + urlParams.toString();
-        window.location.href = newURL;
-    }
-
-    if (document.querySelector("body [class='box_none']"))
-    {
-        const currentURL = window.location.href;
-        console.log("Current URL:", currentURL);
-
-        let currentPage = getCurrentPageFromURL();
-        console.log("Current Page:", currentPage);
-
-        const pageCountElement = document.querySelector("body [class='fntSml color1Med']");
-        const totalPages = parseInt(pageCountElement.textContent);
-
-        const pageSelectorDiv = document.querySelector("body [class='parttypeTabHolder']");
-
-        const backgroundBox = document.createElement("div");
-        backgroundBox.style.backgroundColor = "#f4f4f4";
-        backgroundBox.style.padding = "5px";
-        backgroundBox.style.borderRadius = "5px";
-        backgroundBox.style.position = "fixed";
-        backgroundBox.style.left = "4%";
-
-        const pageSelector = document.createElement("select");
-
-        for (let i = 1; i <= totalPages; i++)
+        if (!document.querySelector("[role*=tabpanel]"))
         {
-            const option = document.createElement("option");
-            option.text = `Sida ${i}`;
-            option.value = i;
-            pageSelector.appendChild(option);
+            const getCurrentPageFromURL = () =>
+            {
+                const urlParams = new URLSearchParams(window.location.search);
+                return parseInt(urlParams.get("page")) || 0;
+            }
+
+            const updateURLWithPage = (pageNumber) =>
+            {
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set("page", pageNumber);
+                const newURL = window.location.pathname + "?" + urlParams.toString();
+                window.location.href = newURL;
+                console.warn(newURL)
+            }
+
+            if (document.querySelector("body"))
+            {
+                let pageCount = null;
+                let currentPage = getCurrentPageFromURL();
+
+                const numOfItems = document.querySelector("[class*='mat-mdc-paginator-range-label']");
+                const limOfItems = document.querySelector("[class*='mat-mdc-form-field-flex'] [class*='mat-mdc-select-min-line ng-tns']");
+                try
+                {
+                    pageCount = Math.ceil(numOfItems.textContent.match(/of (\d+)/)[1] / limOfItems.textContent) - 1;
+                }
+                catch (error)
+                {
+                    // not present ig?
+                }
+                const totalPages = parseInt(pageCount);
+
+                const pageSelectorDiv = document.querySelector("[class*=card]");
+
+                // Remove the old background box if it exists
+                const existingBackgroundBox = document.getElementById("backgroundBox");
+                if (existingBackgroundBox)
+                {
+                    existingBackgroundBox.remove();
+                }
+
+                const backgroundBox = document.createElement("div");
+                backgroundBox.id = "backgroundBox"; // Assign an ID for easy reference
+                backgroundBox.style.backgroundColor = "#b4bad3";
+                backgroundBox.style.padding = "5px";
+                backgroundBox.style.borderRadius = "5px";
+                backgroundBox.style.position = "fixed";
+                backgroundBox.style.left = "4%";
+                backgroundBox.style.zIndex = 999;
+
+                const pageSelector = document.createElement("select");
+
+                for (let i = 0; i <= totalPages; i++)
+                {
+                    const option = document.createElement("option");
+                    option.text = `Sida ${i + 1}`;
+                    option.value = i;
+                    pageSelector.appendChild(option);
+                }
+
+                pageSelector.value = currentPage;
+
+                pageSelector.addEventListener("change", (event) =>
+                {
+                    const selectedPage = parseInt(event.target.value);
+                    updateURLWithPage(selectedPage);
+                    currentPage = selectedPage;
+                    console.log("Updated URL with Page:", window.location.href);
+                });
+
+                backgroundBox.appendChild(pageSelector);
+                pageSelectorDiv.appendChild(backgroundBox);
+            }
         }
-
-        pageSelector.value = currentPage;
-
-        pageSelector.addEventListener("change", (event) =>
-        {
-            const selectedPage = parseInt(event.target.value);
-            updateURLWithPage(selectedPage);
-            currentPage = selectedPage;
-            console.log("Updated URL with Page:", window.location.href);
-        });
-
-        backgroundBox.appendChild(pageSelector);
-        pageSelectorDiv.appendChild(backgroundBox);
-    } */
+    }
 
     // Tar priserna på sidan och drar av momsen med en text under
 
@@ -268,7 +299,7 @@
         try
         {
             const container = document.querySelector("app-products-list");
-            const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"]");
+            const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"], [transloco*=\"label_manufacturer_code\"]");
             const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
 
             elements.forEach((element, index) =>
@@ -309,7 +340,7 @@
 
     const productInfo = () =>
     {
-        if (document.querySelector("[role*=tabpanel]"))
+        if (document.querySelector("[transloco*='label_stock_status']"))
         {
             const stockNo = document.querySelector("[class*='text-danger fw-bold ms-1']");
             const stockText = stockNo.previousSibling.previousSibling.previousSibling;
@@ -338,7 +369,7 @@
             stockText.appendChild(btn);
         }
 
-        if (document.querySelector("[role*=tabpanel]"))
+        if (document.querySelector("[transloco*='label_stock_status']"))
         {
             const companyNameDiv = document.querySelector("[class*='text-primary fw-semibold fs-6']");
             const companyName = companyNameDiv.getAttribute("title").trim();
@@ -379,10 +410,12 @@
                 observer.disconnect();
                 setTimeout(function()
                 {
+                    showLogo();
                     priceSlasher();
                     markHedemora();
                     copyOriginal();
                     productInfo();
+                    sideWidget();
                 }, 500);
             }
         }
@@ -417,10 +450,12 @@
                     else if (!targetElement && isElementPresent)
                     {
                         isElementPresent = false;
+                        showLogo();
                         priceSlasher();
                         markHedemora();
                         copyOriginal();
                         productInfo();
+                        sideWidget();
                     }
                 }
             });

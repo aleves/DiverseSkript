@@ -1,23 +1,27 @@
 ---
-    Version 2.02
-        * Högerklick för att spara bilder
-        * Skapar knappar för att kopiera diverse nummer
+    Version 2.09
+        * Sidväljare vid produktlistor
+        * Buggfixar
 ---
-    Vesrion 2.03
+    Version 2.08
+        * Buggfixar
+---
+    Version 2.07
+        * Buggfixar
+---
+    Version 2.06
+        * Buggfixar
+---
+    Version 2.05
         * Buggfixar
 ---
     Version 2.04
         * Skapar denna ruta för att visa förändringar
           Denna ruta hålls stängd tills nästa version
 ---
-    Version 2.05
+    Vesrion 2.03
         * Buggfixar
 ---
-    Version 2.06
-        * Buggfixar
----
-    Version 2.07
-        * Buggfixar
----
-    Version 2.08
-        * Buggfixar
+    Version 2.02
+        * Högerklick för att spara bilder
+        * Skapar knappar för att kopiera diverse nummer
