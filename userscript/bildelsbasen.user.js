@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.09
+// @version     2.10
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -116,7 +116,7 @@
 
                             popup.innerHTML =
                             `
-                                <h2>Förändringslogg</h2>
+                                <h2>BDB Helper - Förändringslogg</h2>
                                 <pre style="max-height: 200px; overflow-y: auto;">${changelogText}</pre>
                                 <button id="closeBtn">Stäng</button>
                             `;
@@ -155,7 +155,6 @@
                 urlParams.set("page", pageNumber);
                 const newURL = window.location.pathname + "?" + urlParams.toString();
                 window.location.href = newURL;
-                console.warn(newURL)
             }
 
             if (document.querySelector("body"))
@@ -164,20 +163,19 @@
                 let currentPage = getCurrentPageFromURL();
 
                 const numOfItems = document.querySelector("[class*='mat-mdc-paginator-range-label']");
-                const limOfItems = document.querySelector("[class*='mat-mdc-form-field-flex'] [class*='mat-mdc-select-min-line ng-tns']");
+                const limOfItems = document.querySelector("[class*='mat-mdc-form-field-flex'] [class*='mat-mdc-select-min-line']");
                 try
                 {
                     pageCount = Math.ceil(numOfItems.textContent.match(/of (\d+)/)[1] / limOfItems.textContent) - 1;
                 }
                 catch (error)
                 {
-                    // not present ig?
+                    console.log("error in sideWidget")
                 }
                 const totalPages = parseInt(pageCount);
 
                 const pageSelectorDiv = document.querySelector("[class*=card]");
 
-                // Remove the old background box if it exists
                 const existingBackgroundBox = document.getElementById("backgroundBox");
                 if (existingBackgroundBox)
                 {
@@ -185,7 +183,7 @@
                 }
 
                 const backgroundBox = document.createElement("div");
-                backgroundBox.id = "backgroundBox"; // Assign an ID for easy reference
+                backgroundBox.id = "backgroundBox";
                 backgroundBox.style.backgroundColor = "#b4bad3";
                 backgroundBox.style.padding = "5px";
                 backgroundBox.style.borderRadius = "5px";
@@ -210,7 +208,6 @@
                     const selectedPage = parseInt(event.target.value);
                     updateURLWithPage(selectedPage);
                     currentPage = selectedPage;
-                    console.log("Updated URL with Page:", window.location.href);
                 });
 
                 backgroundBox.appendChild(pageSelector);
@@ -300,11 +297,12 @@
         {
             const container = document.querySelector("app-products-list");
             const elements = container.querySelectorAll("[transloco*=\"label_original_no\"], [transloco*=\"label_new_code\"], [transloco*=\"label_visual_article_no\"], [transloco*=\"label_manufacturer_code\"]");
-            const btns = document.querySelectorAll("app-products-list [class*='me-1 link-underline-hover']");
 
-            elements.forEach((element, index) =>
+            elements.forEach((element) =>
             {
                 const parentElement = element.parentElement;
+                const childrenAfterFirst = [...parentElement.children].slice(1);
+                const combinedText = childrenAfterFirst.map(child => child.textContent).join(" ");
                 const btn = document.createElement("btn");
                 btn.textContent = element.textContent;
                 Object.assign(btn.style, btnStyle);
@@ -312,7 +310,7 @@
                 btn.title = "Kopiera nummer";
                 btn.addEventListener("click", event =>
                 {
-                    const elementText = btns[index].textContent;
+                    const elementText = combinedText;
                     navigator.clipboard.writeText(elementText)
                         .then(() =>
                         {
