@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.10
+// @version     2.11
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -85,7 +85,7 @@
 
     // Visar ändringar efter varje ny version
 
-    if (document.querySelector("body"))
+    /*     if (document.querySelector("body"))
     {
         const showChangelogPopup = () =>
         {
@@ -135,7 +135,7 @@
             }
         }
         showChangelogPopup();
-    }
+    } */
 
     // Placerar en sidväljare bredbvid huvudrutan
 
