@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.11
+// @version     2.12
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -220,16 +220,24 @@
 
     const priceSlasher = () =>
     {
-        let elements = document.querySelectorAll("[class*='fs-7 ms-2 ng-star-inserted'], [class*='ms-1 fs-8 ng-star-inserted']");
+        let elements = document.querySelectorAll("[class*='fs-7 ms-2'], :not([class*=text-success])[class*='ms-1 fs-8']");
+
         elements.forEach(function(elementPre)
         {
             const element = elementPre.previousSibling;
+
+            if (element.parentNode.querySelector(".slashed-price"))
+            {
+                return;
+            }
+
             let newLi = document.createElement("li");
             let textContent = element.textContent;
             let number = parseFloat(textContent.replace(/[a-zA-Z,]/g, ""));
             let result = number / 1.25;
             newLi.textContent = `(¾) ${result.toFixed(2)} SEK`;
-            newLi.classList.add("fw-semibold");
+            newLi.classList.add("fw-semibold", "slashed-price");
+
             element.parentNode.insertBefore(newLi, element.nextSibling.nextSibling);
         });
     }
@@ -434,18 +442,20 @@
         observer.observe(document, { childList: true, subtree: true });
 
         let isElementPresent = false;
+
         new MutationObserver(mutationsList =>
         {
             mutationsList.forEach(mutation =>
             {
                 if (mutation.type === "childList")
                 {
-                    const targetElement = document.querySelector("ngx-loading-bar [class*=ngx-spinner-icon]");
-                    if (targetElement && !isElementPresent)
+                    const loadingElement = document.querySelector("ngx-loading-bar [class*=ngx-spinner-icon]");
+
+                    if (loadingElement && !isElementPresent)
                     {
                         isElementPresent = true;
                     }
-                    else if (!targetElement && isElementPresent)
+                    else if (!loadingElement && isElementPresent)
                     {
                         isElementPresent = false;
                         showLogo();
@@ -455,6 +465,14 @@
                         productInfo();
                         sideWidget();
                     }
+
+                    mutation.removedNodes.forEach(node =>
+                    {
+                        if (node.matches && node.matches(":has([class*=placeholder])[class*=col-md-2]"))
+                        {
+                            priceSlasher();
+                        }
+                    });
                 }
             });
         }).observe(document.body, { subtree: true, childList: true });
