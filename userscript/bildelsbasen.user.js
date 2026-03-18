@@ -5,7 +5,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://www.bildelsbasen.se/*
 // @grant       none
-// @version     2.12
+// @version     2.13
 // @author      aleves
 // @description Bildelsbasen - Helper
 // @grant       GM_xmlhttpRequest
@@ -405,7 +405,7 @@
 
     // Observerar element som behöver laddas in först innan kod körs
 
-    if (document.querySelector("app-shell"))
+    if (document.querySelector("app-root"))
     {
         var svgFound = false;
         const onSvgFound = () =>
